@@ -11,33 +11,32 @@ export default function TeamCard({ team, record }) {
   return (
     <button
       onClick={() => navigate(`/teams/${team.id}`)}
-      className="w-full text-left bg-navy-800 border border-navy-700 rounded-xl p-4
-                 hover:border-mlb-red/50 hover:shadow-lg hover:shadow-mlb-red/10
+      className="w-full text-left card rounded-xl p-4
+                 hover:bg-navy-700/50 hover:border-mlb-blue/40
+                 hover:shadow-lg hover:shadow-black/40
                  transition-all group"
     >
-      {/* Abbreviation badge */}
+      {/* Abbreviation + rank */}
       <div className="flex items-start justify-between mb-2">
-        <span className="text-2xl font-bold text-mlb-red font-mono group-hover:scale-105 transition-transform">
+        <span className="text-2xl font-black text-mlb-red font-mono tracking-tight">
           {team.abbreviation}
         </span>
         {record?.divisionRank && (
-          <span className="text-xs text-gray-500 bg-navy-700 rounded px-1.5 py-0.5">
-            #{record.divisionRank} Div
+          <span className="text-xs text-gray-500 bg-navy-700/80 rounded px-1.5 py-0.5 font-mono">
+            #{record.divisionRank}
           </span>
         )}
       </div>
 
       <p className="font-semibold text-white text-sm leading-tight">{team.name}</p>
-      <p className="text-xs text-gray-400 mt-0.5">{team.venue?.name}</p>
+      <p className="text-xs text-gray-500 mt-0.5 truncate">{team.venue?.name}</p>
 
       {record && (
-        <div className="mt-3 flex gap-4 text-xs">
-          <span className="text-gray-300 font-mono font-medium">
-            {wins}-{losses}
-          </span>
+        <div className="mt-3 pt-3 border-t border-navy-700/50 flex gap-4 text-xs font-mono">
+          <span className="text-gray-200 font-bold">{wins}-{losses}</span>
           <span className="text-gray-500">{pct}</span>
           {record.gamesBack !== '-' && (
-            <span className="text-gray-500">GB: {record.gamesBack}</span>
+            <span className="text-gray-600">GB {record.gamesBack}</span>
           )}
         </div>
       )}

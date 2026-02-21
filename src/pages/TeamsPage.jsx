@@ -24,7 +24,6 @@ export default function TeamsPage() {
   const { data: teams, isLoading: teamsLoading, isError: teamsError, error: teamsErr, refetch } = useTeams()
   const { data: standings } = useStandings(season)
 
-  // Build a lookup: teamId → standingsRecord
   const recordByTeam = {}
   standings?.forEach((div) => {
     div.teamRecords?.forEach((rec) => {
@@ -32,7 +31,6 @@ export default function TeamsPage() {
     })
   })
 
-  // Build a lookup: divisionId → [teams]
   const teamsByDivision = {}
   teams?.forEach((team) => {
     const divId = team.division?.id
@@ -48,24 +46,25 @@ export default function TeamsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Teams</h1>
-        <p className="text-gray-400 text-sm mt-0.5">{season} Season</p>
+        <h1 className="text-2xl font-bold text-white tracking-tight">Teams</h1>
+        <p className="text-gray-500 text-sm mt-0.5">{season} Season</p>
       </div>
 
       <div className="space-y-10">
-        {Object.entries(DIVISIONS).map(([league, divisions]) => (
+        {Object.entries(DIVISIONS).map(([league, divisions], leagueIdx) => (
           <section key={league}>
-            <h2 className="text-lg font-semibold text-mlb-red mb-4 border-b border-navy-700 pb-2">
-              {league}
-            </h2>
+            {/* League header with accent stripe */}
+            <div className="flex items-center gap-3 mb-5">
+              <span className={`w-1 h-6 rounded-full shrink-0 ${leagueIdx === 0 ? 'bg-mlb-red' : 'bg-mlb-blue'}`} />
+              <h2 className="text-lg font-bold text-white tracking-tight">{league}</h2>
+            </div>
+
             <div className="space-y-6">
               {divisions.map((div) => {
                 const divTeams = teamsByDivision[div.id] ?? []
                 return (
                   <div key={div.id}>
-                    <h3 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">
-                      {div.name}
-                    </h3>
+                    <p className="section-label mb-3">{div.name}</p>
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                       {divTeams.map((team) => (
                         <TeamCard
