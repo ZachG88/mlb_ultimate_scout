@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-navy-900 text-white min-h-screen;
+    font-family: Inter, system-ui, sans-serif;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  .tab-btn {
+    @apply px-4 py-2 text-sm font-medium rounded-t-lg transition-colors;
+  }
+  .tab-btn.active {
+    @apply bg-navy-700 text-white border-b-2 border-mlb-red;
+  }
+  .tab-btn:not(.active) {
+    @apply text-gray-400 hover:text-white;
+  }
+
+  .stat-table th {
+    @apply text-xs font-semibold text-gray-400 uppercase tracking-wide py-2 px-3 text-left;
+  }
+  .stat-table td {
+    @apply py-2 px-3 text-sm;
+  }
+  .stat-table tr:nth-child(even) {
+    @apply bg-navy-800/40;
+  }
+}
