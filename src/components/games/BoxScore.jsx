@@ -1,23 +1,25 @@
 import { useState } from 'react'
 
 const BATTING_COLS = [
-  { key: 'atBats', label: 'AB' },
-  { key: 'runs', label: 'R' },
-  { key: 'hits', label: 'H' },
-  { key: 'rbi', label: 'RBI' },
-  { key: 'baseOnBalls', label: 'BB' },
-  { key: 'strikeOuts', label: 'K' },
-  { key: 'avg', label: 'AVG' },
+  { key: 'atBats',      label: 'AB'  },
+  { key: 'runs',        label: 'R'   },
+  { key: 'hits',        label: 'H'   },
+  { key: 'rbi',         label: 'RBI' },
+  { key: 'baseOnBalls', label: 'BB'  },
+  { key: 'strikeOuts',  label: 'K'   },
+  { key: 'avg',         label: 'AVG' },
 ]
 
 const PITCHING_COLS = [
-  { key: 'inningsPitched', label: 'IP' },
-  { key: 'hits', label: 'H' },
-  { key: 'runs', label: 'R' },
-  { key: 'earnedRuns', label: 'ER' },
-  { key: 'baseOnBalls', label: 'BB' },
-  { key: 'strikeOuts', label: 'K' },
-  { key: 'era', label: 'ERA' },
+  { key: 'inningsPitched',  label: 'IP'  },
+  { key: 'numberOfPitches', label: 'P'   }, // total pitches thrown
+  { key: 'strikes',         label: 'STR' }, // strikes thrown
+  { key: 'hits',            label: 'H'   },
+  { key: 'runs',            label: 'R'   },
+  { key: 'earnedRuns',      label: 'ER'  },
+  { key: 'baseOnBalls',     label: 'BB'  },
+  { key: 'strikeOuts',      label: 'K'   },
+  { key: 'era',             label: 'ERA' },
 ]
 
 export default function BoxScore({ boxScore }) {
@@ -36,10 +38,10 @@ export default function BoxScore({ boxScore }) {
           <button
             key={s}
             onClick={() => setSide(s)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors ${
               side === s
-                ? 'bg-mlb-red text-white'
-                : 'bg-navy-800 text-gray-300 hover:text-white'
+                ? 'bg-mlb-blue text-white'
+                : 'bg-navy-700/60 text-gray-400 hover:text-white ring-1 ring-navy-600'
             }`}
           >
             {boxScore.teams[s]?.team?.abbreviation ?? s.toUpperCase()}
@@ -67,14 +69,16 @@ function TeamBoxScore({ teamData, teamName }) {
   const rows = tab === 'batting' ? batters : pitchers
 
   return (
-    <div className="rounded-xl border border-navy-700 overflow-hidden">
-      <div className="flex gap-1 p-3 bg-navy-800/60 border-b border-navy-700">
+    <div className="card rounded-xl overflow-hidden">
+      <div className="flex gap-1 p-3 border-b border-navy-700/60">
         {['batting', 'pitching'].map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-3 py-1 rounded text-xs font-medium capitalize transition-colors ${
-              tab === t ? 'bg-navy-700 text-white' : 'text-gray-400 hover:text-white'
+            className={`px-3 py-1 rounded text-xs font-bold capitalize transition-colors ${
+              tab === t
+                ? 'bg-mlb-blue/15 text-white ring-1 ring-mlb-blue/30'
+                : 'text-gray-500 hover:text-gray-300'
             }`}
           >
             {t}
@@ -85,7 +89,7 @@ function TeamBoxScore({ teamData, teamName }) {
       <div className="overflow-x-auto">
         <table className="w-full stat-table">
           <thead>
-            <tr className="border-b border-navy-700">
+            <tr>
               <th className="text-left">Player</th>
               {tab === 'batting' && <th className="text-left">Pos</th>}
               {cols.map((c) => (
@@ -96,15 +100,14 @@ function TeamBoxScore({ teamData, teamName }) {
           <tbody>
             {rows.map((player) => {
               const stats = player.stats?.[tab] ?? {}
-              const info = player.person
               return (
-                <tr key={player.person?.id} className="border-b border-navy-700/30">
-                  <td className="font-medium text-white">{info?.fullName ?? '—'}</td>
+                <tr key={player.person?.id}>
+                  <td className="font-medium text-white whitespace-nowrap">{player.person?.fullName ?? '—'}</td>
                   {tab === 'batting' && (
-                    <td className="text-gray-400 text-xs">{player.position?.abbreviation ?? '—'}</td>
+                    <td className="text-gray-500 text-xs font-mono">{player.position?.abbreviation ?? '—'}</td>
                   )}
                   {cols.map((c) => (
-                    <td key={c.key} className="text-center text-gray-300 font-mono">
+                    <td key={c.key} className="text-center text-gray-300 font-mono tabular-nums">
                       {stats[c.key] ?? '—'}
                     </td>
                   ))}
@@ -113,7 +116,7 @@ function TeamBoxScore({ teamData, teamName }) {
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={cols.length + 2} className="text-center text-gray-500 py-6">
+                <td colSpan={cols.length + 2} className="text-center text-gray-500 py-8">
                   No data available
                 </td>
               </tr>
