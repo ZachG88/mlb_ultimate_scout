@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/mlb-api/:path*",
+      "destination": "https://statsapi.mlb.com/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
