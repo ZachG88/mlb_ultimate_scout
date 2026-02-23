@@ -10,6 +10,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/mlb-api/, ''),
       },
+      '/savant-api': {
+        target: 'https://baseballsavant.mlb.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/savant-api/, ''),
+      },
     },
   },
 })

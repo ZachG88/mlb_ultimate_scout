@@ -236,50 +236,77 @@ export default function PitchZone({ currentPlay, className = 'mb-6' }) {
             <p className="section-label mb-2">Sequence</p>
             <div className="space-y-1">
               {pitches.map((pitch, idx) => {
-                const code     = pitch.details?.call?.code
+                const code      = pitch.details?.call?.code
                 const { bg, border } = callColor(code)
-                const typeCode = pitch.details?.type?.code ?? '—'
-                const typeDesc = pitch.details?.type?.description ?? typeCode
-                const velo     = pitch.pitchData?.startSpeed
-                const isLatest = idx === pitches.length - 1
+                const typeCode  = pitch.details?.type?.code ?? '—'
+                const typeDesc  = pitch.details?.type?.description ?? typeCode
+                const velo      = pitch.pitchData?.startSpeed
+                const spinRate  = pitch.pitchData?.breaks?.spinRate
+                const breakH    = pitch.pitchData?.breaks?.breakHorizontal
+                const breakV    = pitch.pitchData?.breaks?.breakVerticalInduced ?? pitch.pitchData?.breaks?.breakVertical
+                const isLatest  = idx === pitches.length - 1
 
                 return (
                   <div
                     key={pitch.index ?? idx}
-                    className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors ${
+                    className={`rounded-lg px-2.5 py-2 transition-colors ${
                       isLatest ? 'bg-navy-700/70 ring-1 ring-navy-500/60' : 'bg-navy-800/40'
                     }`}
                   >
-                    {/* Colored number */}
-                    <div
-                      className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center"
-                      style={{ background: bg, boxShadow: `0 0 0 1px ${border}` }}
-                    >
-                      <span className="text-[9px] font-black text-white font-mono">{idx + 1}</span>
+                    {/* Main row */}
+                    <div className="flex items-center gap-2.5">
+                      {/* Colored number */}
+                      <div
+                        className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center"
+                        style={{ background: bg, boxShadow: `0 0 0 1px ${border}` }}
+                      >
+                        <span className="text-[9px] font-black text-white font-mono">{idx + 1}</span>
+                      </div>
+
+                      {/* Type code */}
+                      <span className="text-[10px] font-black font-mono text-gray-400 w-6 shrink-0">
+                        {typeCode}
+                      </span>
+
+                      {/* Full type name */}
+                      <span className="text-xs text-gray-400 truncate flex-1">{typeDesc}</span>
+
+                      {/* Velocity */}
+                      {velo != null && (
+                        <span className="text-xs font-mono text-gray-400 shrink-0">
+                          {Math.round(velo)} mph
+                        </span>
+                      )}
+
+                      {/* Call code */}
+                      <span
+                        className="text-[10px] font-black font-mono w-4 text-right shrink-0"
+                        style={{ color: border }}
+                      >
+                        {code}
+                      </span>
                     </div>
 
-                    {/* Type code badge */}
-                    <span className="text-[10px] font-black font-mono text-gray-400 w-6 shrink-0">
-                      {typeCode}
-                    </span>
-
-                    {/* Full type name */}
-                    <span className="text-xs text-gray-400 truncate flex-1">{typeDesc}</span>
-
-                    {/* Velocity */}
-                    {velo != null && (
-                      <span className="text-xs font-mono text-gray-500 shrink-0">
-                        {Math.round(velo)}
-                      </span>
+                    {/* Statcast sub-row: spin + movement */}
+                    {(spinRate != null || breakH != null || breakV != null) && (
+                      <div className="flex gap-3 mt-1 pl-7">
+                        {spinRate != null && (
+                          <span className="text-[10px] font-mono text-gray-600">
+                            {Math.round(spinRate).toLocaleString()} rpm
+                          </span>
+                        )}
+                        {breakH != null && (
+                          <span className="text-[10px] font-mono text-gray-600">
+                            H {breakH > 0 ? '+' : ''}{Math.round(breakH)}"
+                          </span>
+                        )}
+                        {breakV != null && (
+                          <span className="text-[10px] font-mono text-gray-600">
+                            iVB {breakV > 0 ? '+' : ''}{Math.round(breakV)}"
+                          </span>
+                        )}
+                      </div>
                     )}
-
-                    {/* Call code */}
-                    <span
-                      className="text-[10px] font-black font-mono w-4 text-right shrink-0"
-                      style={{ color: border }}
-                    >
-                      {code}
-                    </span>
                   </div>
                 )
               })}

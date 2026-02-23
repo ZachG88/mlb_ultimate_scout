@@ -5,6 +5,10 @@
       "destination": "https://statsapi.mlb.com/:path*"
     },
     {
+      "source": "/savant-api/:path*",
+      "destination": "https://baseballsavant.mlb.com/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

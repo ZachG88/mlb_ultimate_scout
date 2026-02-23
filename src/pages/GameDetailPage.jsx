@@ -8,11 +8,12 @@ import PlayByPlay from '../components/games/PlayByPlay'
 import PitchCount from '../components/games/PitchCount'
 import LiveSituation from '../components/games/LiveSituation'
 import PitchZone from '../components/games/PitchZone'
+import StatcastPanel from '../components/games/StatcastPanel'
 import StatBadge from '../components/ui/StatBadge'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 import ErrorMessage from '../components/ui/ErrorMessage'
 
-const TABS = ['Box Score', 'Play by Play']
+const TABS = ['Box Score', 'Play by Play', 'Statcast']
 
 export default function GameDetailPage() {
   const { gamePk } = useParams()
@@ -28,7 +29,7 @@ export default function GameDetailPage() {
   const { gameData, liveData } = feed
   const status = gameData?.status
   const { label: statusLabel, color: statusColor } = gameStatusInfo(status)
-  const isLive = status?.abstractGameState === 'Live'
+  const isLive  = status?.abstractGameState === 'Live'
   const isFinal = status?.abstractGameState === 'Final'
 
   const away = gameData?.teams?.away
@@ -39,8 +40,11 @@ export default function GameDetailPage() {
   const homeWins = isLive ? false : homeScore > awayScore
 
   const currentPlay = liveData?.plays?.currentPlay
-  const allPlays = liveData?.plays?.allPlays ?? []
-  const boxScore = liveData?.boxscore
+  const allPlays    = liveData?.plays?.allPlays ?? []
+  const boxScore    = liveData?.boxscore
+
+  // Show live situation widgets for live games AND completed games (for testing + last-play context)
+  const showSituation = (isLive || isFinal) && !!currentPlay
 
   return (
     <div>
@@ -94,7 +98,7 @@ export default function GameDetailPage() {
           </p>
 
           {/* Last play description */}
-          {isLive && currentPlay?.result?.description && (
+          {currentPlay?.result?.description && (
             <div className="mt-4 bg-navy-700/40 border border-navy-600/40 rounded-xl px-4 py-2.5 text-sm text-gray-300 text-center">
               {currentPlay.result.description}
             </div>
@@ -102,11 +106,11 @@ export default function GameDetailPage() {
         </div>
       </div>
 
-      {/* Live pitch count */}
+      {/* Live pitch count — only during live games */}
       {isLive && <PitchCount liveData={liveData} />}
 
-      {/* Field situation + pitch zone — side by side on lg screens */}
-      {isLive && (
+      {/* Field situation + pitch zone — live AND final */}
+      {showSituation && (
         <div className="flex flex-col lg:flex-row gap-6 mb-6">
           <div className="lg:flex-1 min-w-0">
             <LiveSituation liveData={liveData} className="" />
@@ -160,8 +164,9 @@ export default function GameDetailPage() {
         ))}
       </div>
 
-      {tab === 'Box Score' && <BoxScore boxScore={boxScore} />}
-      {tab === 'Play by Play' && <PlayByPlay allPlays={allPlays} />}
+      {tab === 'Box Score'   && <BoxScore boxScore={boxScore} />}
+      {tab === 'Play by Play'&& <PlayByPlay allPlays={allPlays} />}
+      {tab === 'Statcast'    && <StatcastPanel allPlays={allPlays} />}
     </div>
   )
 }

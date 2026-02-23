@@ -12,8 +12,8 @@ const BATTING_COLS = [
 
 const PITCHING_COLS = [
   { key: 'inningsPitched',  label: 'IP'  },
-  { key: 'numberOfPitches', label: 'P'   }, // total pitches thrown
-  { key: 'strikes',         label: 'STR' }, // strikes thrown
+  { key: 'numberOfPitches', label: 'P'   },
+  { key: 'strikes',         label: 'STR' },
   { key: 'hits',            label: 'H'   },
   { key: 'runs',            label: 'R'   },
   { key: 'earnedRuns',      label: 'ER'  },
@@ -21,6 +21,10 @@ const PITCHING_COLS = [
   { key: 'strikeOuts',      label: 'K'   },
   { key: 'era',             label: 'ERA' },
 ]
+
+// battingOrder: "100" = starter in slot 1, "101" = first sub in slot 1, etc.
+const orderSlot = (bo) => Math.floor(parseInt(bo) / 100)
+const isSub     = (bo) => parseInt(bo) % 100 !== 0
 
 export default function BoxScore({ boxScore }) {
   const [side, setSide] = useState('away')
@@ -54,7 +58,7 @@ export default function BoxScore({ boxScore }) {
   )
 }
 
-function TeamBoxScore({ teamData, teamName }) {
+function TeamBoxScore({ teamData }) {
   const [tab, setTab] = useState('batting')
   const players = Object.values(teamData?.players ?? {})
 
@@ -64,9 +68,6 @@ function TeamBoxScore({ teamData, teamName }) {
 
   const pitchers = players
     .filter((p) => p.stats?.pitching && p.stats.pitching.inningsPitched)
-
-  const cols = tab === 'batting' ? BATTING_COLS : PITCHING_COLS
-  const rows = tab === 'batting' ? batters : pitchers
 
   return (
     <div className="card rounded-xl overflow-hidden">
@@ -87,43 +88,120 @@ function TeamBoxScore({ teamData, teamName }) {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full stat-table">
-          <thead>
-            <tr>
-              <th className="text-left">Player</th>
-              {tab === 'batting' && <th className="text-left">Pos</th>}
-              {cols.map((c) => (
-                <th key={c.key} className="text-center">{c.label}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((player) => {
-              const stats = player.stats?.[tab] ?? {}
-              return (
-                <tr key={player.person?.id}>
-                  <td className="font-medium text-white whitespace-nowrap">{player.person?.fullName ?? '—'}</td>
-                  {tab === 'batting' && (
-                    <td className="text-gray-500 text-xs font-mono">{player.position?.abbreviation ?? '—'}</td>
-                  )}
-                  {cols.map((c) => (
-                    <td key={c.key} className="text-center text-gray-300 font-mono tabular-nums">
-                      {stats[c.key] ?? '—'}
-                    </td>
-                  ))}
-                </tr>
-              )
-            })}
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={cols.length + 2} className="text-center text-gray-500 py-8">
-                  No data available
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        {tab === 'batting' ? (
+          <BattingTable batters={batters} />
+        ) : (
+          <PitchingTable pitchers={pitchers} />
+        )}
       </div>
     </div>
+  )
+}
+
+// ── Batting table ─────────────────────────────────────────────────────────────
+function BattingTable({ batters }) {
+  return (
+    <table className="w-full stat-table">
+      <thead>
+        <tr>
+          <th className="text-left w-6 pl-3">#</th>
+          <th className="text-left">Player</th>
+          <th className="text-left">Pos</th>
+          {BATTING_COLS.map((c) => (
+            <th key={c.key} className="text-center">{c.label}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {batters.map((player) => {
+          const stats = player.stats?.batting ?? {}
+          const sub   = isSub(player.battingOrder)
+          const slot  = orderSlot(player.battingOrder)
+
+          return (
+            <tr
+              key={player.person?.id}
+              className={sub ? 'opacity-75' : ''}
+            >
+              {/* Slot number — only shown for starters */}
+              <td className="pl-3 text-gray-600 text-xs font-mono w-6">
+                {!sub && slot}
+              </td>
+
+              {/* Player name — indented for subs */}
+              <td className="font-medium whitespace-nowrap">
+                {sub ? (
+                  <span className="flex items-center gap-1 pl-4 text-gray-400">
+                    <span className="text-gray-600 text-xs leading-none">↳</span>
+                    {player.person?.fullName ?? '—'}
+                  </span>
+                ) : (
+                  <span className="text-white">{player.person?.fullName ?? '—'}</span>
+                )}
+              </td>
+
+              {/* Position */}
+              <td className="text-gray-500 text-xs font-mono">
+                {player.position?.abbreviation ?? '—'}
+              </td>
+
+              {/* Stat columns */}
+              {BATTING_COLS.map((c) => (
+                <td key={c.key} className="text-center text-gray-300 font-mono tabular-nums">
+                  {stats[c.key] ?? '—'}
+                </td>
+              ))}
+            </tr>
+          )
+        })}
+        {batters.length === 0 && (
+          <tr>
+            <td colSpan={BATTING_COLS.length + 3} className="text-center text-gray-500 py-8">
+              No data available
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  )
+}
+
+// ── Pitching table ────────────────────────────────────────────────────────────
+function PitchingTable({ pitchers }) {
+  return (
+    <table className="w-full stat-table">
+      <thead>
+        <tr>
+          <th className="text-left">Pitcher</th>
+          {PITCHING_COLS.map((c) => (
+            <th key={c.key} className="text-center">{c.label}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {pitchers.map((player) => {
+          const stats = player.stats?.pitching ?? {}
+          return (
+            <tr key={player.person?.id}>
+              <td className="font-medium text-white whitespace-nowrap">
+                {player.person?.fullName ?? '—'}
+              </td>
+              {PITCHING_COLS.map((c) => (
+                <td key={c.key} className="text-center text-gray-300 font-mono tabular-nums">
+                  {stats[c.key] ?? '—'}
+                </td>
+              ))}
+            </tr>
+          )
+        })}
+        {pitchers.length === 0 && (
+          <tr>
+            <td colSpan={PITCHING_COLS.length + 1} className="text-center text-gray-500 py-8">
+              No data available
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
   )
 }
